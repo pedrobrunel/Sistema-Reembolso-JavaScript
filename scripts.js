@@ -5,6 +5,9 @@ const categoriaDaDespesa = document.getElementById("categoriaDespesa")
 
 const listaDespesa = document.querySelector("ul")
 
+const quantidadeDeDespesa = document.querySelector("aside header p span")
+const valorTotalHeader = document.querySelector("aside header h2")
+
 //oninput observa sempre que alguém digitar algo e dispara o evento
 valorDaDespesa.oninput = () => {
     //remover a letra no campo de número utilizando regex
@@ -64,17 +67,86 @@ function adicionarDespesa (novaDespesa){
         const mostraNomeDespesa = document.createElement("strong")
         mostraNomeDespesa.textContent = novaDespesa.nome
         const mostraCategoriaDespesa = document.createElement("span")
-        mostraCategoriaDespesa.textContent = novaDespesa.categoriaDaDespesa
+        mostraCategoriaDespesa.textContent = novaDespesa.nomeCategoria
+
+
+        const mostrarValorDespesa = document.createElement("span")
+        mostrarValorDespesa.classList.add("expense-amount")
+        mostrarValorDespesa.innerHTML = `<small>R$</small>${novaDespesa.custo.toUpperCase().replace("R$", "")}`
+
+
+        const removerIcone = document.createElement("img")
+        removerIcone.classList.add("remove-icon")
+        removerIcone.setAttribute("src", "img/remove.svg")
+        removerIcone.setAttribute("alt", "remover")
 
         //adiciona nome e categoria na div
-        infoDespesa.append(mostraNomeDespesa, mostraCategoriaDespesa)
-        itemDespesa.append(iconeDespesa, infoDespesa)
+        infoDespesa.append(mostraNomeDespesa, mostraCategoriaDespesa, )
+        
+        itemDespesa.append(iconeDespesa, infoDespesa, mostrarValorDespesa, removerIcone)
 
         listaDespesa.append(itemDespesa)
 
+        contagemLista()
 
     } catch (error){
         alert("Não foi possível enviar")
         console.log(error)
     }
+    limpaInput()
+}
+
+function contagemLista (){
+    try{
+        const contarLista = listaDespesa.children
+        quantidadeDeDespesa.textContent = `${contarLista.length} ${contarLista.length > 1 ? "despesas" : "despesa"}`
+
+
+        let valorTotalSomado = 0
+
+        for(let aux = 0; aux < contarLista.length; aux++){
+            const auxDespesa = contarLista[aux].querySelector(".expense-amount")
+            //limpa e deixa só caracteres numéricos e troca , por .
+            let valorAux = auxDespesa.textContent.replace(/[^\d,]/g, "").replace(",",".")
+
+            valorAux = parseFloat(valorAux)
+
+            if(isNaN(valorAux)){
+                return alert("Não foi possível calcular o total, valor não é um número")
+            }
+            valorTotalSomado += valorAux
+
+        }
+        const simboloBRL = document.createElement("small")
+        simboloBRL.textContent = "R$"
+
+        valorTotalSomado = formatarValorDaDespesaBRL(valorTotalSomado).toUpperCase().replace("R$", "")
+        valorTotalHeader.innerHTML = ""
+        valorTotalHeader.append(simboloBRL, valorTotalSomado)
+        
+
+    }catch{
+        alert("não foi possível atualizar a contagem da lista")
+    }
+}
+
+//captura o clique na lista
+
+listaDespesa.addEventListener("click", function (evento2){
+
+    if(evento2.target.classList.contains("remove-icon")){
+        //pegar a LI pai do clicado
+        const itemClicado = evento2.target.closest(".expense")
+        itemClicado.remove()
+    }
+
+    contagemLista()
+
+})
+
+//limpa o formulário
+function limpaInput (){
+    valorDaDespesa.value = ""
+    nomeDaDespesa.value = ""
+    categoriaDaDespesa.value = ""
 }
